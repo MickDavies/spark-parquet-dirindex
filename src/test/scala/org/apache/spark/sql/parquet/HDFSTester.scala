@@ -19,7 +19,8 @@ trait HDFSTester {
     var basePath:Path = null
 
   def hdfsBeforeAll() {
-    val testDir = new File("./target/hdfs/testDir")
+    val testDir = File.createTempFile("./target/hdfs", "sparksql")
+    testDir.delete()
     FileUtil.fullyDelete(testDir)
     hadoopConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, testDir.getAbsolutePath)
     val builder = new MiniDFSCluster.Builder(hadoopConf)

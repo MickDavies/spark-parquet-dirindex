@@ -86,7 +86,8 @@ private[parquet] object DirectoryStructure {
 
 
 /**
- * TODO: update this documentation
+ * Implemnentation of directory based indexing for parquet files see
+ * [org.apache.spark.sql.parquet.dirindex.DefaultSource] for details
  */
 @DeveloperApi
 case class DirIndexParquetRelation(initialPath: String, directoryColumns: Seq[(String, DataType)])(@transient val sqlContext: SQLContext)

@@ -162,7 +162,7 @@ class DirIndexParquetTest extends FlatSpec with Matchers with BeforeAndAfter wit
   }
 
   after {
-    sqlContext.sparkContext.stop
+    sqlContext.sparkContext.stop()
     hdfsAfter()
   }
 }
