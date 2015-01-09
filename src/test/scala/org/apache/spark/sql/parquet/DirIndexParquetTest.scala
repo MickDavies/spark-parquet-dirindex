@@ -106,6 +106,24 @@ class DirIndexParquetTest extends FlatSpec with Matchers with BeforeAndAfter wit
     sqlContext.sql("SELECT * FROM dirindex_parquet WHERE c2 = 2").count should be(2)
   }
 
+  it should "support null values" in {
+    val c1v1 = mkDir("c1v1")
+    createParquetFile(sqlContext, c1v1, Row("c1v1", "rv1"), Row("c1v1", "rv2"))
+    val c1v2 = mkDir("NULL")
+    createParquetFile(sqlContext, c1v2, Row(null, "rv1"), Row(null, "rv2"))
+
+    sqlContext.sql( s"""
+      create temporary table dirindex_parquet
+      USING org.apache.spark.sql.parquet.dirindex
+      OPTIONS (
+        path '${basePath.toString}',
+        col1 'c1:String'
+      )
+    """)
+    val results = sqlContext.sql("SELECT * FROM dirindex_parquet WHERE c1 IS NULL")
+    results.collect should be(List(Row(null, "rv1"), Row(null, "rv2")))
+  }
+
   it should "raise an error if a dir name cannot be converted to expected type" in {
     val v1 = mkDir("c1v1/invalidDirNameForInt")
     createParquetFile(sqlContext, v1, Row("c1v1", 1, "rv1"), Row("c1v1", 1, "rv2"))
@@ -125,16 +143,11 @@ class DirIndexParquetTest extends FlatSpec with Matchers with BeforeAndAfter wit
 
   }
 
-  // TODO test when dir name cannot be converted to type
-  // TODO test large number of dirs
-  // How do we handle nulls -
-  // Can we escape strings in file names
-
-
   def createParquetFile(sqlContext: SQLContext, path: Path, rows: Row*) {
     val rowRDD = sqlContext.sparkContext.parallelize(rows)
 
     val typeInfo = for (col <- 1 to rows.head.size) yield ("c" + col, rows.head(col - 1) match {
+      case null => StringType
       case _: String => StringType
       case _: Integer => IntegerType
     })

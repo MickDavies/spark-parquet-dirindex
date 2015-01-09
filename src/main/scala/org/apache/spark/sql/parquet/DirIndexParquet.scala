@@ -43,21 +43,26 @@ private[parquet] object FileUtilities {
 
 private[parquet] object DirectoryStructure {
 
+  /** TODO define complete set of supported types for dirindex
+    * How should escaping be handled
+    */
   def toType(s: String, dt: DataType): Any = {
-    try {
-      dt match {
-        case StringType => s
-        case BooleanType => s.toBoolean
-        case DoubleType => s.toDouble
-        case FloatType => s.toFloat
-        case ByteType => s.toByte
-        case IntegerType => s.toInt
-        case LongType => s.toLong
-        case ShortType => s.toShort
+    if ("NULL".equals(s)) null
+    else
+      try {
+        dt match {
+          case StringType => s
+          case BooleanType => s.toBoolean
+          case DoubleType => s.toDouble
+          case FloatType => s.toFloat
+          case ByteType => s.toByte
+          case IntegerType => s.toInt
+          case LongType => s.toLong
+          case ShortType => s.toShort
+        }
+      } catch {
+        case e: Exception => throw new IllegalArgumentException(s"dir name $s cannot be converted to type $dt", e)
       }
-    } catch {
-      case e: Exception => throw new IllegalArgumentException(s"dir name $s cannot be converted to type $dt", e)
-    }
   }
 
   def discoverPartitions(fs:FileSystem, initialPath:String, directoryColumns: Seq[(String, DataType)]):Seq[DirectoryStructurePartition] = {
@@ -86,8 +91,8 @@ private[parquet] object DirectoryStructure {
 
 
 /**
- * Implemnentation of directory based indexing for parquet files see
- * [org.apache.spark.sql.parquet.dirindex.DefaultSource] for details
+ * Trial implementation of directory based indexing for parquet files see
+ * [[org.apache.spark.sql.parquet.dirindex.DefaultSource]] for details
  */
 @DeveloperApi
 case class DirIndexParquetRelation(initialPath: String, directoryColumns: Seq[(String, DataType)])(@transient val sqlContext: SQLContext)
