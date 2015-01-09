@@ -147,13 +147,6 @@ class DirIndexParquetTest extends FlatSpec with Matchers with BeforeAndAfter wit
     schemaRDD.saveAsParquetFile(filePath.toString)
   }
 
-  override def beforeAll() {
-    hdfsBeforeAll()
-  }
-
-  override def afterAll() {
-    hdfsAfterAll()
-  }
 
   before {
     hdfsBefore()
@@ -163,6 +156,5 @@ class DirIndexParquetTest extends FlatSpec with Matchers with BeforeAndAfter wit
 
   after {
     sqlContext.sparkContext.stop()
-    hdfsAfter()
   }
 }

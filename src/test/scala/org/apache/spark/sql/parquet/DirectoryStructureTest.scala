@@ -7,10 +7,10 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
 class DirectoryStructureTest extends FlatSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with HDFSTester {
 
   "FileUtilities.allFiles" should "find all files" in {
-    val c1v1 = createDirAndTouchFile("c1v1")
-    createDirAndTouchFile("c1v1/zsub")
-    FileUtilities.allFiles(hdfs, c1v1).map(_.getPath) should be {
-      List(new Path(c1v1, "f"), new Path(c1v1, "zsub/f"))
+    val d = createDirAndTouchFile("d")
+    createDirAndTouchFile("d/sub")
+    FileUtilities.allFiles(hdfs, d).map(_.getPath) should be {
+      List(path("d/f"), path("d/sub/f"))
     }
   }
 
@@ -69,19 +69,8 @@ class DirectoryStructureTest extends FlatSpec with Matchers with BeforeAndAfter 
     c1v1
   }
 
-  override def beforeAll() {
-    hdfsBeforeAll()
-  }
-
-  override def afterAll() {
-    hdfsAfterAll()
-  }
 
   before {
     hdfsBefore()
-  }
-
-  after {
-    hdfsAfter()
   }
 }

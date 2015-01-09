@@ -8,38 +8,22 @@ import org.apache.hadoop.hdfs.MiniDFSCluster
 
 /**
  * A trait used to support tests requiring HDFS
- *
- * Note HDFS cluster initialisation takes a couple of seconds
  */
 trait HDFSTester {
     val hadoopConf = new Configuration
     var hdfsURI:String = null
-    var hdfsCluster:MiniDFSCluster = null
     var hdfs:FileSystem = null
     var basePath:Path = null
 
-  def hdfsBeforeAll() {
-    val testDir = File.createTempFile("./target/hdfs", "sparksql")
-    testDir.delete()
-    FileUtil.fullyDelete(testDir)
-    hadoopConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, testDir.getAbsolutePath)
-    val builder = new MiniDFSCluster.Builder(hadoopConf)
-    hdfsCluster  = builder.build()
-    hdfsURI = "hdfs://localhost:"+ hdfsCluster.getNameNodePort + "/"
-    basePath = new Path(hdfsURI + "base")
-    hdfs = FileSystem.get(new java.net.URI(hdfsURI), hadoopConf)
-  }
-
-  def hdfsAfterAll() {
-    hdfsCluster.shutdown()
-  }
 
   def hdfsBefore() {
-    assert(hdfs.mkdirs(basePath))
-  }
-
-  def hdfsAfter() {
-    assert(hdfs.delete(basePath, true))
+    val testDir = File.createTempFile("./target/hdfs", "sparksql")
+    FileUtil.fullyDelete(testDir)
+    assert(testDir.mkdirs())
+    testDir.deleteOnExit()
+    hdfsURI = testDir.getCanonicalPath
+    basePath = new Path("file:" + hdfsURI)
+    hdfs = FileSystem.get(new java.net.URI(hdfsURI), hadoopConf)
   }
 
   def URI(dir: String) = hdfsURI + dir
@@ -50,10 +34,12 @@ trait HDFSTester {
   }
 
   def mkDir(d: String): Path = {
-    val sp = new Path(basePath, d)
+    val sp = path(d)
     assert(hdfs.mkdirs(sp))
     sp
   }
+
+  def path(f:String) = new Path(basePath, f)
 
   def allFiles(path: Path) = FileUtilities.allFiles(hdfs, path)
 }

@@ -74,7 +74,7 @@ private[parquet] object DirectoryStructure {
     def partitionValue(path: Path, directoryColumn: (String, DataType)): Any = toType(path.getName, directoryColumn._2)
 
     def go(partitionValues:List[Any], path:Path, remainingDirectoryColumns: Seq[(String, DataType)]):Seq[DirectoryStructurePartition] = remainingDirectoryColumns match {
-      case Nil => List(DirectoryStructurePartition(partitionValues.reverse, files(path))) // TODO why is reverse needed on Mac - verify
+      case Nil => List(DirectoryStructurePartition(partitionValues.reverse, files(path)))
       case remainingDirectoryColumn :: remainingDirectoryColumns1 =>
         childDirs(path).flatMap(child => go(partitionValue(child, remainingDirectoryColumn)::partitionValues, child, remainingDirectoryColumns1))
     }
